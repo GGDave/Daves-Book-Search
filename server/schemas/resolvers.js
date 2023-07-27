@@ -1,4 +1,4 @@
-const { User, Books } = require('../models');
+const { User, Book } = require('../models');
 const { AuthenticationError } = require('apollo-server-express');
 const { signToken } = require('../utils/auth');
 
@@ -35,38 +35,39 @@ const resolvers = {
     },
 
     // Define the addUser resolver to handle user signup
-    addUser: async (parent, { username, email, password }) => {
-      const user = await User.create({ username, email, password });
+    addUser: async (parent, args) => {
+      const user = await User.create(args);
       const token = signToken(user);
+
       return { token, user };
     },
 
     // Define the saveBook resolver to save a book to the user's account
-    saveBook: async (parent, { input }, context) => {
+    saveBook: async (parent, { bookToSave }, context) => {
       if (context.user) {
-        const updatedUser = await User.findByIdAndUpdate(
-          context.user._id,
-          { $push: { savedBooks: input } },
+        const updatedBooks = await User.findOneAndUpdate(
+          { _id: context.user._id },
+          { $addToSet: { savedBooks: bookToSave } },
           { new: true }
         ).populate('savedBooks');
 
-        return updatedUser;
+        return updatedBooks;
       }
-      throw new AuthenticationError('You need to be logged in to save a book.');
+
+      throw new AuthenticationError('You need to be logged in!');
     },
 
     // Define the removeBook resolver to remove a book from the user's account
     removeBook: async (parent, { bookId }, context) => {
       if (context.user) {
-        const updatedUser = await User.findByIdAndUpdate(
-          context.user._id,
+        const updatedBooks = await User.findOneAndUpdate(
+          { _id: context.user._id },
           { $pull: { savedBooks: { bookId } } },
           { new: true }
-        ).populate('savedBooks');
+        );
 
-        return updatedUser;
+        return updatedBooks;
       }
-      throw new AuthenticationError('You need to be logged in to remove a book.');
     },
   },
 };
