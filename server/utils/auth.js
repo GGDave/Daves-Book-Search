@@ -16,9 +16,9 @@ module.exports = {
 
     
     if (req.headers.authorization) {
-      token = token.split(' ').pop().trim();
+      token = token.split(' ')[1];
     }
-
+    // token = token.split(' ').pop().trim();
     
     if (!token) {
       return req;
