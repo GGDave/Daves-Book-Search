@@ -3,36 +3,32 @@ const { AuthenticationError } = require('apollo-server-express');
 const { signToken } = require('../utils/auth');
 
 const resolvers = {
-  Query: {
     // Define the me resolver to get the current user's data
-    me: async (parent, args, context) => {
-      if (context.user) {
-        const userData = await User.findOne({ _id: context.user._id })
-          .select('-password')
-          .populate('savedBooks');
-        return userData;
-      }
-      throw new AuthenticationError('Not logged in');
-    },
+  Query: {
+      me: async (parent, { userId }) => {
+          return User.findOne({ _id: userId });
+      },
   },
+  
   Mutation: {
     // Define the login resolver to handle user login
     login: async (parent, { email, password }) => {
-      const user = await User.findOne({ email });
+        const user = await User.findOne({ email });
 
-      if (!user) {
+        if (!user) {
         throw new AuthenticationError('Incorrect email or password');
-      }
+        }
 
       const correctPassword = await user.isCorrectPassword(password);
 
       if (!correctPassword) {
         throw new AuthenticationError('Incorrect email or password');
-      }
+        }
 
-      const token = signToken(user);
-      return { token, user };
+        const token = signToken(user);
+        return { token, user };
     },
+
 
     // Define the addUser resolver to handle user signup
     addUser: async (parent, args) => {
