@@ -68,6 +68,7 @@ const SearchBooks = () => {
     const bookToSave = searchedBooks.find((book) => book.bookId === bookId);
 
     // get token
+     console.log('Session Status:', Auth.loggedIn());
     const token = Auth.loggedIn() ? Auth.getToken() : null;
 
     if (!token) {
@@ -77,7 +78,7 @@ const SearchBooks = () => {
     try {
       // execute saveBook mutation and pass in variable data from the book to save
       const { data } = await saveBook({
-        variables: { bookData: { ...bookToSave } }
+        variables: { input: { ...bookToSave } }
       });
     
       // if book successfully saves to user's account, save book id to state
@@ -123,8 +124,8 @@ const SearchBooks = () => {
         <Row>
           {searchedBooks.map((book) => {
             return (
-              <Col md="4">
-                <Card key={book.bookId} border='dark'>
+              <Col md="4" key={book.bookId}>
+                <Card border='dark'>
                   {book.image ? (
                     <Card.Img src={book.image} alt={`The cover for ${book.title}`} variant='top' />
                   ) : null}
