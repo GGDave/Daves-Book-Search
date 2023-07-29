@@ -68,7 +68,6 @@ const SearchBooks = () => {
     const bookToSave = searchedBooks.find((book) => book.bookId === bookId);
 
     // get token
-     console.log('Session Status:', Auth.loggedIn());
     const token = Auth.loggedIn() ? Auth.getToken() : null;
 
     if (!token) {
