@@ -20,6 +20,15 @@ const SavedBooks = () => {
   
   const [removeBook, { error }] = useMutation(REMOVE_BOOK);
   
+  if (!Auth.loggedIn()) {
+    return (
+      <h2>
+        You need to be logged in to see your saved books. Please{' '}
+        <a href="/login">log in</a> or <a href="/signup">sign up.</a>
+      </h2>
+    );
+  }
+  
   const handleDeleteBook = async (bookId) => {
     const token = Auth.loggedIn() ? Auth.getToken() : null;
 
