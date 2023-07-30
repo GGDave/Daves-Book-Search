@@ -43,26 +43,26 @@ const resolvers = {
     },
 
     // Define the saveBook resolver to save a book to the user's account
-    saveBook: async (parent, { bookToSave }, context) => {
+    saveBook: async (parent, { input }, context) => {
       if (context.user) {
         const updatedBooks = await User.findOneAndUpdate(
           { _id: context.user._id },
-          { $addToSet: { savedBooks: bookToSave } },
+          { $addToSet: { savedBooks: input } },
           { new: true }
         ).populate('savedBooks');
-
+    
         return updatedBooks;
       }
-
+    
       throw new AuthenticationError('You need to be logged in!');
     },
 
     // Define the removeBook resolver to remove a book from the user's account
-    removeBook: async (parent, { bookId }, context) => {
+    removeBook: async (parent, { input }, context) => {
       if (context.user) {
         const updatedBooks = await User.findOneAndUpdate(
           { _id: context.user._id },
-          { $pull: { savedBooks: { bookId } } },
+          { $pull: { savedBooks: input  } },
           { new: true }
         );
 
