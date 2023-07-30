@@ -4,9 +4,13 @@ const { signToken } = require('../utils/auth');
 
 const resolvers = {
     // Define the me resolver to get the current user's data
-  Query: {
-      me: async (parent, { userId }) => {
-          return User.findOne({ _id: userId });
+    Query: {
+      me: async (parent, args, context) => {
+          if (context.user) {
+              return User.findOne({ _id: context.user._id }).populate('savedBooks');
+          }
+  
+          throw new AuthenticationError('You need to be logged in!');
       },
   },
   
