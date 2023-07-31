@@ -13,13 +13,13 @@ import Auth from '../utils/auth';
 import { removeBookId } from '../utils/localStorage';
 
 const SavedBooks = () => {
-  
+
   const { loading, data } = useQuery(GET_ME);
-  
+
   const userData = data?.me || {};
-  
+
   const [removeBook, { error }] = useMutation(REMOVE_BOOK);
-  
+
   if (!Auth.loggedIn()) {
     return (
       <h2>
@@ -28,8 +28,9 @@ const SavedBooks = () => {
       </h2>
     );
   }
-  
+
   const handleDeleteBook = async (bookId) => {
+    console.log('Deleting book with id: ', bookId);
     const token = Auth.loggedIn() ? Auth.getToken() : null;
 
     if (!token) {
@@ -39,9 +40,26 @@ const SavedBooks = () => {
     try {
       await removeBook({
         variables: { bookId },
-        update(cache, { data: { removeBook } }) {
-          cache.evict({ id: `Book:${bookId}` });
-        }
+        update(cache) {
+          // Update the cache to reflect the changes on the client-side
+          cache.modify({
+            fields: {
+              me(existingMeData) {
+                // Create a new reference without the removed book
+                const newBookRef = existingMeData.savedBooks.filter(
+                  (book) => book.bookId !== bookId
+                );
+                return { ...existingMeData, savedBooks: newBookRef };
+              },
+            },
+          });
+        },
+      }, {
+        context: {
+          headers: {
+            authorization: `Bearer ${token}`,
+          },
+        },
       });
 
       // upon success, remove book's id from localStorage

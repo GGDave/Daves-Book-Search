@@ -58,16 +58,22 @@ const resolvers = {
     },
 
     // Define the removeBook resolver to remove a book from the user's account
-    removeBook: async (parent, { input }, context) => {
+    removeBook: async (parent, { bookId }, context) => {
       if (context.user) {
-        const updatedBooks = await User.findOneAndUpdate(
+        const updatedUser = await User.findOneAndUpdate(
           { _id: context.user._id },
-          { $pull: { savedBooks: input  } },
+          { $pull: { savedBooks: { bookId } } },
           { new: true }
-        );
-
-        return updatedBooks;
+        ).populate('savedBooks');
+    
+        if (!updatedUser) {
+          throw new AuthenticationError(`Couldn't find user with this id: ${context.user._id}`);
+        }
+    
+        return updatedUser;
       }
+    
+      throw new AuthenticationError('You need to be logged in!');
     },
   },
 };
